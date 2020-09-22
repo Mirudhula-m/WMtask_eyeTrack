@@ -1,11 +1,19 @@
 // messages to the subject for eye tracking
 // includes instructions for calibration
 // includes eye fixation training
+
+
 var gazeMetric_initialIter;
 var gazeMetric_finalIter;
 
 var giveFB = 0;
 var do_recal = 0;
+
+//--------------------------------------
+//**************************************
+// CALIBRATION SCREENS
+//**************************************
+//--------------------------------------
 
 var calibration_msg = 
 {
@@ -31,6 +39,12 @@ var calibration =
 	}
 };
 
+//--------------------------------------
+//**************************************
+// EYE-TRACKING WITH FEEDBACK
+//**************************************
+//--------------------------------------
+
 // pre-trial validation with feedback circle
 var fix_valid_FB = 
 {
@@ -53,9 +67,9 @@ var fix_valid_FB =
 		fixationDot();
 		stim_str = s.toString();
 		s.clear();
-		return stim_str;
+		return "<p style = 'font-size:27px; color:black; position: absolute; text-align: center'>Please fixate your eyes on the dot at the centre.</p>" + stim_str;
 	},
-	prompt: "<p style = 'font-size:27px; color:black'>Please fixate your eyes on the dot at the centre.</p>",
+//	prompt: "<p style = 'font-size:27px; color:black'>Please fixate your eyes on the dot at the centre.</p>",
 	trial_duration: 500,
 	choices: jsPsych.NO_KEYS,
 	on_finish: function(data)
@@ -79,30 +93,21 @@ var loop_fix_FB =
 	timeline: [fix_valid_FB],
 	loop_function: function()
 	{	
-		err_lim_x1 = win_x/2 - 80;
-		err_lim_x2 = win_x/2 + 80;
+		errPercent = 5.5;
+		errRadius = (win_x * errPercent)/100; //5% of the screen size in x direction
 
-		err_lim_y1 = win_y/2 - 80;
-		err_lim_y2 = win_y/2 + 80;
+		centreX = win_x/2;
+		centreY = win_y/2;
 
-		var sum_gazeX = 0;
-		var sum_gazeY = 0;
+		var sum_dist = 0;
 
-		console.log("eyeeeee  "+gazeMetric_initialIter+" "+gazeMetric_finalIter);
 		for(var validIter = gazeMetric_initialIter; validIter < gazeMetric_finalIter; validIter++)
 		{
-			sum_gazeX = sum_gazeX + gazeX[validIter];
-			sum_gazeY = sum_gazeY + gazeY[validIter];
+			sum_dist = sum_dist + Math.sqrt(Math.pow((gazeX[validIter] - centreX), 2) + Math.pow((gazeY[validIter] - centreY), 2));
 		}
-		avg_gazeX = sum_gazeX/(gazeMetric_finalIter - gazeMetric_initialIter );
-		avg_gazeY = sum_gazeY/(gazeMetric_finalIter - gazeMetric_initialIter);
+		avg_dist = sum_dist / (gazeMetric_finalIter - gazeMetric_initialIter);
 
-		console.log("errx1: "+err_lim_x1);
-		console.log("erry1: "+err_lim_y1);
-		console.log("avgx1: "+avg_gazeX);
-		console.log("avgy1: "+avg_gazeY);
-
-		if(avg_gazeX >= err_lim_x1 && avg_gazeX <= err_lim_x2 && avg_gazeY >=err_lim_y1 && avg_gazeY <= err_lim_y2)
+		if(avg_dist <= errRadius)	
 		{
 			return false;
 		}
@@ -133,6 +138,12 @@ var cond_fix_FB =
 		}
 	}
 }
+
+//--------------------------------------
+//**************************************
+// EYE-TRACKING WITHOUT FEEDBACK
+//**************************************
+//--------------------------------------
 
 var fix_valid_NFB = 
 {
@@ -175,6 +186,12 @@ var fix_valid_NFB =
 	}
 }
 
+//--------------------------------------
+//**************************************
+// RECALIBRATION SCREENS
+//**************************************
+//--------------------------------------
+
 var clickRecal = 
 {
 	type: "html-keyboard-response",
@@ -198,9 +215,8 @@ var clickRecal =
 		fixationDot();
 		stim_str = s.toString();
 		s.clear();
-		return stim_str;
+		return "<p style = 'font-size:27px; color:black; position: absolute'>Please fixate your eyes on the dot at the centre <strong>AND SIMULTANEOUSLY</strong> click on the dot at the centre <strong>till the circle covers the dot</strong>.</p>" + stim_str;
 	},
-	prompt: "<p style = 'font-size:27px; color:black'>Please fixate your eyes on the dot at the centre <strong>AND SIMULTANEOUSLY</strong> click on the dot at the centre <strong>till the circle covers the dot</strong>.</p>",
 	trial_duration: 500,
 	choices: jsPsych.NO_KEYS,
 	on_finish: function(data)
@@ -227,24 +243,22 @@ var loop_recalibration =
 	timeline: [clickRecal],
 	loop_function: function()
 	{
-		err_lim_x1 = win_x/2 - 50;
-		err_lim_x2 = win_x/2 + 50;
+		errPercent = 5.5;
+		errRadius = (win_x * errPercent)/100; //5% of the screen size in x direction
 
-		err_lim_y1 = win_y/2 - 50;
-		err_lim_y2 = win_y/2 + 50;
+		centreX = win_x/2;
+		centreY = win_y/2;
 
-		var sum_gazeX = 0;
-		var sum_gazeY = 0;
+		var sum_dist = 0;
 
 		for(var validIter = gazeMetric_initialIter; validIter < gazeMetric_finalIter; validIter++)
 		{
-			sum_gazeX = sum_gazeX + gazeX[validIter];
-			sum_gazeY = sum_gazeY + gazeY[validIter];
+			sum_dist = sum_dist + Math.sqrt(Math.pow((gazeX[validIter] - centreX), 2) + Math.pow((gazeY[validIter] - centreY), 2));
 		}
-		avg_gazeX = sum_gazeX/(gazeMetric_finalIter - gazeMetric_initialIter);
-		avg_gazeY = sum_gazeY/(gazeMetric_finalIter - gazeMetric_initialIter);
 
-		if(avg_gazeX >= err_lim_x1 && avg_gazeX <= err_lim_x2 && avg_gazeY >=err_lim_y1 && avg_gazeY <= err_lim_y2)
+		avg_dist = sum_dist / (gazeMetric_finalIter - gazeMetric_initialIter);
+
+		if(avg_dist <= errRadius)	
 		{
 			return false;
 		}
@@ -273,29 +287,37 @@ var cond_recalibration =
 	}
 }
 
+//--------------------------------------
+//**************************************
+// LOOP FIXATION TIMELINE
+//**************************************
+//--------------------------------------
+
 var loop_fixation = 
 {
 	timeline: [cond_fix_FB, cond_recalibration, fix_valid_NFB],
 	loop_function: function()
 	{	
-		err_lim_x1 = win_x/2 - 80;
-		err_lim_x2 = win_x/2 + 80;
+		errPercent = 5.5;
+		errRadius = (win_x * errPercent)/100; //5% of the screen size in x direction
 
-		err_lim_y1 = win_y/2 - 80;
-		err_lim_y2 = win_y/2 + 80;
+		centreX = win_x/2;
+		centreY = win_y/2;
 
-		var sum_gazeX = 0;
-		var sum_gazeY = 0;
+		console.log("err: "+errRadius);
+		console.log("centreX: "+centreX+" centreY: "+centreY);
+
+		var sum_dist = 0;
 
 		for(var validIter = gazeMetric_initialIter; validIter < gazeMetric_finalIter; validIter++)
 		{
-			sum_gazeX = sum_gazeX + gazeX[validIter];
-			sum_gazeY = sum_gazeY + gazeY[validIter];
+			sum_dist = sum_dist + Math.sqrt(Math.pow((gazeX[validIter] - centreX), 2) + Math.pow((gazeY[validIter] - centreY), 2));
+			console.log("sumDist: "+sum_dist);
 		}
-		avg_gazeX = sum_gazeX/(gazeMetric_finalIter - gazeMetric_initialIter);
-		avg_gazeY = sum_gazeY/(gazeMetric_finalIter - gazeMetric_initialIter);
 
-		if(avg_gazeX >= err_lim_x1 && avg_gazeX <= err_lim_x2 && avg_gazeY >=err_lim_y1 && avg_gazeY <= err_lim_y2)
+		avg_dist = sum_dist / (gazeMetric_finalIter - gazeMetric_initialIter);
+		console.log("avg: "+avg_dist);
+		if(avg_dist <= errRadius)		
 		{
 			giveFB = 0;
 			return false;
@@ -307,3 +329,77 @@ var loop_fixation =
 		}
 	}
 }
+
+//--------------------------------------
+//**************************************
+// FORCED CLICK RECALIBRATION
+//**************************************
+//--------------------------------------
+
+buttonIter = 0;
+
+var forced_clickRecal = 
+{
+	type: "html-button-response",
+	stimulus: function()
+	{
+		return "<div class = 'buttonDiv' style = 'height: "+win_x+"px; width: "+win_x+"px'><h2 style = 'color:black'>Click the button 5 times while looking at the mouse pointer..."+buttonIter+"</h2></div>";
+	},
+	choices: [' '],
+	button_html: function()
+	{
+		GazeCloudAPI.OnResult = PlotGaze_withFB;
+		gazeMetric_initialIter = eyeIter;
+		GazeCloudAPI.UseClickRecalibration = true; 
+		document.body.style.cursor = 'pointer';
+
+		//------------------------------------------------------------------
+		// PASS ON DATA
+		//------------------------------------------------------------------
+		changeAngle = jsPsych.data.get().last(1).values()[0].changeAngle;
+
+		countCorrect = jsPsych.data.get().last(1).values()[0].countCorrect;
+		staircaseCorrect = jsPsych.data.get().last(1).values()[0].staircaseCorrect;
+		countNAN = jsPsych.data.get().last(1).values()[0].countNAN;
+		//------------------------------------------------------------------
+
+		return '<input type="button" value="Click!" style="position: absolute; left: '+(win_x/2)+'px; top: '+(win_y/2)+'px">';
+	},
+	on_finish: function(data)
+	{
+		gazeMetric_finalIter = eyeIter;
+
+		GazeCloudAPI.UseClickRecalibration = false; 
+		document.body.style.cursor = 'none';
+
+		//------------------------------------------------------------------
+		// PASS ON DATA
+		//------------------------------------------------------------------
+		data.changeAngle = changeAngle;
+
+		data.countCorrect = countCorrect;
+		data.staircaseCorrect = staircaseCorrect;
+		data.countNAN = countNAN;
+		//------------------------------------------------------------------
+	}
+}
+
+var loop_forced_clickRecal = 
+{
+	timeline: [forced_clickRecal],
+	loop_function: function()
+	{
+		if(buttonIter < 4)
+		{
+			buttonIter++;
+			return true;
+		}
+		else
+		{
+			buttonIter = 0;
+			return false;
+		}
+
+	}
+}
+

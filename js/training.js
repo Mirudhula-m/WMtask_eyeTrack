@@ -29,6 +29,12 @@ function createTimeline()
 
 		for(curr_trialNum = 0; curr_trialNum < n_practiceTrials; curr_trialNum++)
 		{	
+			// every 32 trials --> do forced recalibration
+			if(curr_trialNum%5 == 0)
+			{
+				exp_timeline.push(loop_forced_clickRecal);
+			}
+
 			// pre-trial eye-tracking validation
 			exp_timeline.push(loop_fixation);
 
@@ -72,9 +78,17 @@ function createTimeline()
 
 			exp_timeline.push(storeData(curr_blockNum+1, curr_trialNum+1, cue_pos+1, initialAngles, changeState, changeDirection, screen1_time, delaytime, probe_pos+1))
 
+			
+			if(curr_trialNum%10 == 0 && curr_trialNum > 9)
+			{
+			exp_timeline.push(loop_validation);
+			}
+
 			curr_totalTrialNum++;
 		}
 		exp_timeline.push(post_block_msg());
+		exp_timeline.push(loop_validation);
+		
 	}
 	return exp_timeline;
 }
